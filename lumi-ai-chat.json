@@ -285,6 +285,21 @@
     },
     {
       "parameters": {
+        "public": true,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        440,
+        100
+      ],
+      "id": "78ade99b-0b5b-4da7-a07f-bafcfc90ede9",
+      "name": "Chat Message Testing",
+      "webhookId": "ca82ba04-21d8-4092-a167-4ca16358c0b6"
+    },
+    {
+      "parameters": {
         "method": "POST",
         "url": "http://103.250.10.249:8850/tts",
         "sendBody": true,
@@ -309,22 +324,7 @@
         -160
       ],
       "id": "db51ad53-7e20-408c-9dc4-8bde630fb42e",
-      "name": "HTTP Request"
-    },
-    {
-      "parameters": {
-        "public": true,
-        "options": {}
-      },
-      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
-      "typeVersion": 1.1,
-      "position": [
-        440,
-        100
-      ],
-      "id": "78ade99b-0b5b-4da7-a07f-bafcfc90ede9",
-      "name": "Chat Message Testing",
-      "webhookId": "ca82ba04-21d8-4092-a167-4ca16358c0b6"
+      "name": "TTS"
     }
   ],
   "pinData": {},
@@ -415,7 +415,7 @@
       "main": [
         [
           {
-            "node": "HTTP Request",
+            "node": "TTS",
             "type": "main",
             "index": 0
           }
@@ -477,22 +477,22 @@
         ]
       ]
     },
-    "HTTP Request": {
+    "Chat Message Testing": {
       "main": [
         [
           {
-            "node": "Merge",
+            "node": "Parsing Json From Chat n8n",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Chat Message Testing": {
+    "TTS": {
       "main": [
         [
           {
-            "node": "Parsing Json From Chat n8n",
+            "node": "Merge",
             "type": "main",
             "index": 0
           }
@@ -504,7 +504,7 @@
   "settings": {
     "executionOrder": "v1"
   },
-  "versionId": "efda4af8-2c30-45cf-811c-3fa29ec23491",
+  "versionId": "6d2fe83b-7282-4adc-9a7d-6dcfabbcdf41",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "f93bae6a3c90db1ef166d4bc63961b167e5b660430c542cd609799c136cda7a6"
