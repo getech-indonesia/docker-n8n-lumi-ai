@@ -7,14 +7,21 @@ services:
     restart: unless-stopped
     ports:
       - "5678:5678"
-    volumes:
-      - n8n_data:/home/node/.n8n
     environment:
       - N8N_BASIC_AUTH_ACTIVE=true
       - N8N_BASIC_AUTH_USER=admin
       - N8N_BASIC_AUTH_PASSWORD=admin
       - TZ=Asia/Jakarta
       - GENERIC_TIMEZONE=Asia/Jakarta
+
+      # Wajib agar semua data disimpan lokal (bukan default DB SQLite temp)
+      - DB_TYPE=sqlite
+      - DB_SQLITE_LOCATION=/home/node/.n8n/database.sqlite
+
+      # Lokasi penyimpanan kredensial (optional tapi aman)
+      - N8N_USER_FOLDER=/home/node/.n8n
+    volumes:
+      - n8n_data:/home/node/.n8n
 
 volumes:
   n8n_data:
