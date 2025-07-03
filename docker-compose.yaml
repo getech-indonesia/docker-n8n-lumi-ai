@@ -21,8 +21,24 @@ services:
 
       # Lokasi penyimpanan kredensial (optional tapi aman)
       - N8N_USER_FOLDER=/home/node/.n8n
+
+      # Env Redis (kalau nanti mau diakses oleh n8n workflows)
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
     volumes:
       - n8n_data:/home/node/.n8n
+    depends_on:
+      - redis
+
+  redis:
+    image: redis:7
+    container_name: redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
 
 volumes:
   n8n_data:
+  redis_data:
