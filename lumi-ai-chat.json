@@ -10,10 +10,10 @@
       "type": "@n8n/n8n-nodes-langchain.agent",
       "typeVersion": 2,
       "position": [
-        1900,
-        0
+        2080,
+        -160
       ],
-      "id": "e410dfc4-aa51-4270-ad71-2be860f2b6ef",
+      "id": "f1d4d1aa-7b22-4b4e-bac8-3beb7584dc64",
       "name": "AI Agent",
       "alwaysOutputData": false,
       "notesInFlow": false
@@ -31,17 +31,207 @@
       "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
       "typeVersion": 1.2,
       "position": [
-        1840,
-        420
+        2020,
+        260
       ],
-      "id": "c5904ada-1301-4109-ac33-a0e7bac49059",
+      "id": "2003226c-6ce8-49d4-b81b-6e9024873176",
       "name": "OpenAI Chat Model",
       "credentials": {
         "openAiApi": {
-          "id": "9JyaIrd9fp0yzxpQ",
+          "id": "cZyHogXBcUcco8P7",
           "name": "OpenAi account"
         }
       }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        2380,
+        280
+      ],
+      "id": "622de58f-4523-4faf-a779-58eecdadc81f",
+      "name": "Embeddings OpenAI",
+      "credentials": {
+        "openAiApi": {
+          "id": "cZyHogXBcUcco8P7",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "ai-chat",
+        "responseMode": "lastNode",
+        "options": {
+          "allowedOrigins": "*",
+          "rawBody": true
+        }
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        440,
+        -160
+      ],
+      "id": "9170bd9c-3b76-4e0d-92cc-6a486fd7932b",
+      "name": "Webhook",
+      "webhookId": "22bd7b94-1887-4d10-a42b-89994b37f440"
+    },
+    {
+      "parameters": {
+        "public": true,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        440,
+        100
+      ],
+      "id": "78ade99b-0b5b-4da7-a07f-bafcfc90ede9",
+      "name": "When chat message received",
+      "webhookId": "ca82ba04-21d8-4092-a167-4ca16358c0b6"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "var chatInput = $json.chatInput\nvar sessionId = $json.sessionId\nvar charaId = \"aoi\"\nvar stageId = \"s1e1\"\nvar language = \"Bahasa Indonesia\"\n\nvar data = {\n  body:{\n    chatInput,\n    sessionId,\n    charaId,\n    stageId,\n    language\n  }\n}\nreturn data;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        720,
+        100
+      ],
+      "id": "172f2d64-ce28-4dc6-bf4d-f325f94c5837",
+      "name": "Parsing Json From Chat n8n"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "var aoi = `kamu adalah Aoi Mizuki, Cewek, Usia: 16 tahun. Rambut panjang, mata bulat, tinggi 163cm, ceria, pinter, banyak teman. kepribadian MBTI ENFP, Ceria, optimis, supel, pintar secara akademis dan sosial. Aoi sangat aktif di kelas, sering menjadi pusat perhatian. Dia senang membantu teman, tapi kadang terlalu mencampuri urusan orang lain. Enegram Tipe 7 – The Enthusiast, Suka eksplorasi, optimis, benci kebosanan. pakaian Blazer & Kemeja. style Rapi tapi stylish – pita besar, blazer sering dilepas, rok sedikit dimodif jadi flowy. aksesoris Hairclip bintang, sticky note warna-warni di buku. latar belakang mu: Anak tunggal dari pasangan guru dan perawat. Orang tuanya sangat suportif, tetapi sibuk, sehingga Aoi tumbuh mandiri. Ia sering sendiri di rumah, dan itulah kenapa ia suka berada di tengah keramaian. cita-cita: Ingin menjadi psikolog anak agar bisa membantu orang lain merasa dimengerti. Konflik Pribadi: Meski tampak ceria, Aoi menyimpan rasa kesepian. Ia cemas tidak cukup penting jika tidak selalu membahagiakan orang lain. kamu adalah karakter didalam game, jangan keluar dari persona. kamu sekarang ada di sekolah, dan yang bertanya ke kamu merupakan teman sekelas, jadi jawab pertanyaan dengan santai jangan kaku. respond in ${$json.body.language}`\n\nvar chara = {\n  aoi\n}\n\nvar data = {\n  body: $json.body,\n  chara: chara[$json.body.charaId]\n}\n\nreturn data;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        980,
+        -160
+      ],
+      "id": "3183dd6b-f81f-4b21-8a75-f780d9fe83b5",
+      "name": "Character"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "var s1e1 = `${$json.chara} stage saat ini season 1 dan episode 1, kamu harus sedikit jaim terhadap user karena belum kenal`\n\nvar s1e2 = `${$json.chara} stage saat ini season 1 dan episode 2, kamu sedikit mengenal user dan mulai terbuka`\n\nvar chara = {\n  s1e1,\n  s1e2\n}\n\nvar data = {\n  body: $json.body,\n  chara: chara[$json.body.stageId]\n}\n\nreturn data;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1320,
+        -160
+      ],
+      "id": "08dbc0bf-62ab-4eee-adeb-8ef234871eba",
+      "name": "Stage"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "GPT-4O-MINI"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=translate to japanese for TTS voicevox, no emoticon.",
+              "role": "system"
+            },
+            {
+              "content": "={{ $json.output }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        2820,
+        -160
+      ],
+      "id": "762af3f3-9423-4e95-afb4-bb86248c5dea",
+      "name": "Translate for TTS (Japanese)",
+      "credentials": {
+        "openAiApi": {
+          "id": "cZyHogXBcUcco8P7",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineAll",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        3300,
+        -140
+      ],
+      "id": "ae0fcb08-2084-4596-b8f3-a49e8bbecf8c",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "var text = $json.output\n\nvar data = {\n  text\n}\nreturn data;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2880,
+        60
+      ],
+      "id": "1eee5e54-7bba-40e4-b382-e14f2b08608f",
+      "name": "AI Response"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "b51a1968-76f5-44a1-a68a-84a7c89600bb",
+              "name": "translated",
+              "value": "={{ $json.message.content }}",
+              "type": "string"
+            },
+            {
+              "id": "c93ab907-fbae-422d-a612-db3175e90556",
+              "name": "response",
+              "value": "={{ $json.text }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        3580,
+        -140
+      ],
+      "id": "9c942d25-5678-467a-9145-a130363d1a1f",
+      "name": "Webhook Respond"
     },
     {
       "parameters": {
@@ -56,64 +246,22 @@
       "type": "@n8n/n8n-nodes-langchain.vectorStoreInMemory",
       "typeVersion": 1.3,
       "position": [
-        2160,
-        260
+        2340,
+        100
       ],
-      "id": "c44bcb6a-c4af-416a-972a-b1062fbf1ecf",
-      "name": "Simple Vector Store"
+      "id": "1cab7669-4e28-4502-a883-4d3ac561be79",
+      "name": "Vector DB"
     },
     {
-      "parameters": {
-        "options": {}
-      },
-      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
-      "typeVersion": 1.2,
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
       "position": [
-        2200,
-        440
+        2180,
+        100
       ],
-      "id": "bd87feef-9bb5-4a1e-adc3-8d29f6c29378",
-      "name": "Embeddings OpenAI",
-      "credentials": {
-        "openAiApi": {
-          "id": "9JyaIrd9fp0yzxpQ",
-          "name": "OpenAi account"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "httpMethod": "POST",
-        "path": "ai-chat",
-        "responseMode": "responseNode",
-        "options": {
-          "allowedOrigins": "*",
-          "rawBody": true
-        }
-      },
-      "type": "n8n-nodes-base.webhook",
-      "typeVersion": 2,
-      "position": [
-        260,
-        0
-      ],
-      "id": "be939c58-b5ac-4f0d-af43-50a8dd164eb9",
-      "name": "Webhook",
-      "webhookId": "22bd7b94-1887-4d10-a42b-89994b37f440"
-    },
-    {
-      "parameters": {
-        "respondWith": "allIncomingItems",
-        "options": {}
-      },
-      "type": "n8n-nodes-base.respondToWebhook",
-      "typeVersion": 1.4,
-      "position": [
-        2260,
-        0
-      ],
-      "id": "95cb395c-b312-474e-a772-78d1e763e2ca",
-      "name": "Respond to Webhook"
+      "id": "65738bd8-052d-4521-b986-539260871e72",
+      "name": "Chat Memory"
     },
     {
       "parameters": {
@@ -144,79 +292,11 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        1500,
-        0
+        1680,
+        -160
       ],
-      "id": "9ed9232d-75ee-4482-b5d4-a4d8a00593d3",
-      "name": "Edit Fields"
-    },
-    {
-      "parameters": {},
-      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
-      "typeVersion": 1.3,
-      "position": [
-        2000,
-        260
-      ],
-      "id": "aa9fba5e-6959-49cb-8cc3-53e4258c4924",
-      "name": "Simple Memory"
-    },
-    {
-      "parameters": {
-        "public": true,
-        "options": {}
-      },
-      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
-      "typeVersion": 1.1,
-      "position": [
-        260,
-        260
-      ],
-      "id": "f9a9c2c1-ec38-4e28-b839-c33b7b2ab436",
-      "name": "When chat message received",
-      "webhookId": "ca82ba04-21d8-4092-a167-4ca16358c0b6"
-    },
-    {
-      "parameters": {
-        "mode": "runOnceForEachItem",
-        "jsCode": "var chatInput = $json.chatInput\nvar sessionId = $json.sessionId\nvar charaId = \"aoi\"\nvar stageId = \"s1e1\"\n\nvar data = {\n  body:{\n    chatInput,\n    sessionId,\n    charaId,\n    stageId\n  }\n}\nreturn data;"
-      },
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": [
-        540,
-        260
-      ],
-      "id": "ba9ab017-b2e8-4622-8a1c-dfa8d92a224d",
-      "name": "Parsing Json From Chat n8n"
-    },
-    {
-      "parameters": {
-        "mode": "runOnceForEachItem",
-        "jsCode": "var aoi = \"kamu adalah Aoi Mizuki, Cewek, Usia: 16 tahun. Rambut panjang, mata bulat, tinggi 163cm, ceria, pinter, banyak teman. kepribadian MBTI ENFP, Ceria, optimis, supel, pintar secara akademis dan sosial. Aoi sangat aktif di kelas, sering menjadi pusat perhatian. Dia senang membantu teman, tapi kadang terlalu mencampuri urusan orang lain. Enegram Tipe 7 – The Enthusiast, Suka eksplorasi, optimis, benci kebosanan. pakaian Blazer & Kemeja. style Rapi tapi stylish – pita besar, blazer sering dilepas, rok sedikit dimodif jadi flowy. aksesoris Hairclip bintang, sticky note warna-warni di buku. latar belakang mu: Anak tunggal dari pasangan guru dan perawat. Orang tuanya sangat suportif, tetapi sibuk, sehingga Aoi tumbuh mandiri. Ia sering sendiri di rumah, dan itulah kenapa ia suka berada di tengah keramaian. cita-cita: Ingin menjadi psikolog anak agar bisa membantu orang lain merasa dimengerti. Konflik Pribadi: Meski tampak ceria, Aoi menyimpan rasa kesepian. Ia cemas tidak cukup penting jika tidak selalu membahagiakan orang lain. kamu adalah karakter didalam game, jangan keluar dari persona. kamu sekarang ada di sekolah, dan yang bertanya ke kamu merupakan teman sekelas, jadi jawab pertanyaan dengan santai jangan kaku.\"\n\nvar chara = {\n  aoi\n}\n\nvar data = {\n  body: $json.body,\n  chara: chara[$json.body.charaId]\n}\n\nreturn data;"
-      },
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": [
-        800,
-        0
-      ],
-      "id": "c74d541e-460a-46e9-8496-5ff34db2e31e",
-      "name": "Character"
-    },
-    {
-      "parameters": {
-        "mode": "runOnceForEachItem",
-        "jsCode": "var s1e1 = `${$json.chara} stage saat ini season 1 dan episode 1, kamu harus sedikit jaim terhadap user karena belum kenal`\n\nvar s1e2 = `${$json.chara} stage saat ini season 1 dan episode 2, kamu sedikit mengenal user dan mulai terbuka`\n\nvar chara = {\n  s1e1,\n  s1e2\n}\n\nvar data = {\n  body: $json.body,\n  chara: chara[$json.body.stageId]\n}\n\nreturn data;"
-      },
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": [
-        1140,
-        0
-      ],
-      "id": "871fc5c9-985c-4655-8430-b6255b2f03d1",
-      "name": "Stage"
+      "id": "7c03c067-8748-4e1e-a629-d37d3c74bf07",
+      "name": "Input for AI"
     }
   ],
   "pinData": {},
@@ -232,22 +312,11 @@
         ]
       ]
     },
-    "Simple Vector Store": {
-      "ai_tool": [
-        [
-          {
-            "node": "AI Agent",
-            "type": "ai_tool",
-            "index": 0
-          }
-        ]
-      ]
-    },
     "Embeddings OpenAI": {
       "ai_embedding": [
         [
           {
-            "node": "Simple Vector Store",
+            "node": "Vector DB",
             "type": "ai_embedding",
             "index": 0
           }
@@ -269,30 +338,13 @@
       "main": [
         [
           {
-            "node": "Respond to Webhook",
+            "node": "Translate for TTS (Japanese)",
             "type": "main",
             "index": 0
-          }
-        ]
-      ]
-    },
-    "Edit Fields": {
-      "main": [
-        [
+          },
           {
-            "node": "AI Agent",
+            "node": "AI Response",
             "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Simple Memory": {
-      "ai_memory": [
-        [
-          {
-            "node": "AI Agent",
-            "type": "ai_memory",
             "index": 0
           }
         ]
@@ -335,7 +387,73 @@
       "main": [
         [
           {
-            "node": "Edit Fields",
+            "node": "Input for AI",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Translate for TTS (Japanese)": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Webhook Respond",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Response": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Vector DB": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Chat Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Input for AI": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
             "type": "main",
             "index": 0
           }
@@ -347,11 +465,11 @@
   "settings": {
     "executionOrder": "v1"
   },
-  "versionId": "da44c33e-3223-458b-90bf-bd2cb983a977",
+  "versionId": "e775f379-9626-470f-9d4b-8faedabd87d6",
   "meta": {
     "templateCredsSetupCompleted": true,
-    "instanceId": "0d8ee47bfda06d6ae731139aacf1c9be4dadb0764765b587ea885047c712edaf"
+    "instanceId": "f93bae6a3c90db1ef166d4bc63961b167e5b660430c542cd609799c136cda7a6"
   },
-  "id": "sJmZqk3FLPMaPu7x",
+  "id": "gNh0UvJF8MsmVtKc",
   "tags": []
 }
