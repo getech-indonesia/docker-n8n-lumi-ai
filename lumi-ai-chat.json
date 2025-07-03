@@ -296,7 +296,7 @@
             },
             {
               "name": "pitch",
-              "value": "0.6"
+              "value": "0.65"
             }
           ]
         },
@@ -504,7 +504,7 @@
   "settings": {
     "executionOrder": "v1"
   },
-  "versionId": "fdddb42a-3c19-4377-bba5-6fc0c67d5bcb",
+  "versionId": "efda4af8-2c30-45cf-811c-3fa29ec23491",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "f93bae6a3c90db1ef166d4bc63961b167e5b660430c542cd609799c136cda7a6"
