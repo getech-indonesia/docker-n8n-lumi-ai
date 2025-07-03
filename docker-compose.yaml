@@ -13,6 +13,7 @@ services:
       - N8N_BASIC_AUTH_PASSWORD=admin
       - TZ=Asia/Jakarta
       - GENERIC_TIMEZONE=Asia/Jakarta
+      - N8N_SECURE_COOKIE=false
 
       # Wajib agar semua data disimpan lokal (bukan default DB SQLite temp)
       - DB_TYPE=sqlite
