@@ -87,7 +87,7 @@
       "type": "@n8n/n8n-nodes-langchain.openAi",
       "typeVersion": 1.8,
       "position": [
-        7200,
+        7640,
         -520
       ],
       "id": "762af3f3-9423-4e95-afb4-bb86248c5dea",
@@ -112,7 +112,7 @@
             {
               "id": "c93ab907-fbae-422d-a612-db3175e90556",
               "name": "text",
-              "value": "={{ $('OpenAI Chat').item.json.choices[0].message.content }}",
+              "value": "={{ $('Merge Result TTS & AI').item.json.data.allMessages[3].content }}",
               "type": "string"
             }
           ]
@@ -122,8 +122,8 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        8540,
-        -320
+        10360,
+        -200
       ],
       "id": "9c942d25-5678-467a-9145-a130363d1a1f",
       "name": "Webhook Respond"
@@ -218,7 +218,7 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        7720,
+        8160,
         -480
       ],
       "id": "db51ad53-7e20-408c-9dc4-8bde630fb42e",
@@ -582,11 +582,80 @@
       "type": "n8n-nodes-base.merge",
       "typeVersion": 3.2,
       "position": [
-        8140,
+        8580,
         -320
       ],
       "id": "ae0fcb08-2084-4596-b8f3-a49e8bbecf8c",
       "name": "Merge Result TTS & AI"
+    },
+    {
+      "parameters": {
+        "resource": "Chatting",
+        "operation": "Send Text",
+        "session": "=default",
+        "chatId": "62895355595468@c.us",
+        "text": "={{ $json.data.allMessages[3].content }}",
+        "requestOptions": {}
+      },
+      "type": "n8n-nodes-waha.WAHA",
+      "typeVersion": 202411,
+      "position": [
+        9380,
+        -460
+      ],
+      "id": "34562d17-161e-4860-a78e-3101c736bbdf",
+      "name": "Send To Whatsapp",
+      "credentials": {
+        "wahaApi": {
+          "id": "Iyat5c79OmPy5V4S",
+          "name": "WAHA account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineAll",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        9940,
+        -200
+      ],
+      "id": "13668589-c7c1-4fb9-881d-55ff11f8ab7b",
+      "name": "Merge Result Whatsapp"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineAll",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        4400,
+        -460
+      ],
+      "id": "64f90d0e-c6b3-4ebc-bb10-99dcf168993d",
+      "name": "Merge Vector"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineAll",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        7280,
+        -420
+      ],
+      "id": "23b8aed7-7e6c-48d0-addf-e5c81724cd5d",
+      "name": "Merge Result TTS & AI1"
     }
   ],
   "pinData": {},
@@ -818,17 +887,17 @@
       "main": [
         [
           {
-            "node": "get Vector DB 2",
-            "type": "main",
-            "index": 0
-          },
-          {
             "node": "Merge Vector Result",
             "type": "main",
             "index": 1
           },
           {
             "node": "Merge Vector DB",
+            "type": "main",
+            "index": 1
+          },
+          {
+            "node": "Merge Vector",
             "type": "main",
             "index": 1
           }
@@ -915,14 +984,14 @@
             "index": 0
           },
           {
-            "node": "Translate for TTS (Japanese)",
-            "type": "main",
-            "index": 0
-          },
-          {
             "node": "Merge Result TTS & AI",
             "type": "main",
             "index": 1
+          },
+          {
+            "node": "Merge Result TTS & AI1",
+            "type": "main",
+            "index": 0
           }
         ]
       ]
@@ -931,7 +1000,78 @@
       "main": [
         [
           {
+            "node": "Send To Whatsapp",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge Result Whatsapp",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Send To Whatsapp": {
+      "main": [
+        [
+          {
+            "node": "Merge Result Whatsapp",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge Result Whatsapp": {
+      "main": [
+        [
+          {
             "node": "Webhook Respond",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Vector": {
+      "main": [
+        [
+          {
+            "node": "Merge Vector",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge Vector": {
+      "main": [
+        [
+          {
+            "node": "get Vector DB 2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Memory": {
+      "main": [
+        [
+          {
+            "node": "Merge Result TTS & AI1",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge Result TTS & AI1": {
+      "main": [
+        [
+          {
+            "node": "Translate for TTS (Japanese)",
             "type": "main",
             "index": 0
           }
@@ -943,7 +1083,7 @@
   "settings": {
     "executionOrder": "v1"
   },
-  "versionId": "b2cd8383-5686-418b-8267-a70a7701e463",
+  "versionId": "e9c2c5be-0b39-468e-9680-07a71d55fe35",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "f93bae6a3c90db1ef166d4bc63961b167e5b660430c542cd609799c136cda7a6"
