@@ -78,7 +78,7 @@
               "role": "system"
             },
             {
-              "content": "={{ $('HTTP Request').item.json.choices[0].message.content }}"
+              "content": "={{ $('OpenAI Chat').item.json.choices[0].message.content }}"
             }
           ]
         },
@@ -101,21 +101,6 @@
     },
     {
       "parameters": {
-        "mode": "combine",
-        "combineBy": "combineAll",
-        "options": {}
-      },
-      "type": "n8n-nodes-base.merge",
-      "typeVersion": 3.2,
-      "position": [
-        8140,
-        -320
-      ],
-      "id": "ae0fcb08-2084-4596-b8f3-a49e8bbecf8c",
-      "name": "Merge"
-    },
-    {
-      "parameters": {
         "assignments": {
           "assignments": [
             {
@@ -127,7 +112,7 @@
             {
               "id": "c93ab907-fbae-422d-a612-db3175e90556",
               "name": "text",
-              "value": "={{ $('HTTP Request').item.json.choices[0].message.content }}",
+              "value": "={{ $('OpenAI Chat').item.json.choices[0].message.content }}",
               "type": "string"
             }
           ]
@@ -241,140 +226,6 @@
     },
     {
       "parameters": {
-        "operation": "set",
-        "key": "=memory: {{ $json.data.userId }}:{{ $json.data.charaId }}",
-        "value": "={{ $json.memory }}"
-      },
-      "type": "n8n-nodes-base.redis",
-      "typeVersion": 1,
-      "position": [
-        7000,
-        -40
-      ],
-      "id": "d17738ee-58a9-49d8-87f0-329624a3cf79",
-      "name": "Redis",
-      "credentials": {
-        "redis": {
-          "id": "HxXz8SALEguCMF9j",
-          "name": "Redis account"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "mode": "runOnceForEachItem",
-        "jsCode": "const data = JSON.parse($json.value || '{}');\n\nvar allMessages = []\n\n// Inisialisasi kalau kosong\nif (!data.messages) data.messages = [];\n\n\nallMessages = data.messages\ndata.allMessages = allMessages\n\nif (data.messages.length > 40) {\n  data.messages = data.messages.slice(-40);\n}\n\ndata.stage = $('Stage').item.json.body.stageId;\ndata.charaId = $('Stage').item.json.body.charaId;\ndata.userId = $('Stage').item.json.body.sessionId;\n\n// Tambahkan message baru\n// Cek apakah system message sudah ada\nconst systemAlreadyExists = data.messages.some(\n  m => m.role === \"system\" && m.content === $json.systemMessage\n);\n\n// Tambahkan hanya jika belum ada\nif (!systemAlreadyExists && $json.systemMessage) {\n  data.messages.push({ role: \"system\", content: $json.systemMessage });\n  data.allMessages.push({ role: \"system\", content: $json.systemMessage });\n}\n\n// tambahkan context dari embedding\ndata.messages.push({ role: \"system\", content: `Gunakan informasi ini: $json.context`});\n\n// Tambahkan input user selalu\ndata.messages.push({ role: \"user\", content: $json.chatInput });\ndata.allMessages.push({ role: \"user\", content: $json.chatInput });\n\nvar returnData = {\n  data,\n  openai: { \n    json: {\n      model: \"gpt-4o-mini\",\n      messages: data.messages\n    }\n  },\n  memory: JSON.stringify(data)\n}\nreturn returnData\n"
-      },
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": [
-        5720,
-        -280
-      ],
-      "id": "f9e56393-9193-49b0-872b-f946778fbe3e",
-      "name": "Code"
-    },
-    {
-      "parameters": {
-        "mode": "combine",
-        "combineBy": "combineAll",
-        "options": {}
-      },
-      "type": "n8n-nodes-base.merge",
-      "typeVersion": 3.2,
-      "position": [
-        2060,
-        -180
-      ],
-      "id": "64398560-c95d-42fb-b765-1f871e407861",
-      "name": "Merge1"
-    },
-    {
-      "parameters": {
-        "method": "POST",
-        "url": "https://api.openai.com/v1/chat/completions",
-        "authentication": "predefinedCredentialType",
-        "nodeCredentialType": "openAiApi",
-        "sendBody": true,
-        "specifyBody": "json",
-        "jsonBody": "={{ $json.openai.json }}",
-        "options": {}
-      },
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4.2,
-      "position": [
-        6040,
-        -480
-      ],
-      "id": "68369da8-8056-4ffd-87d7-161efb542ef8",
-      "name": "HTTP Request",
-      "credentials": {
-        "openAiApi": {
-          "id": "cZyHogXBcUcco8P7",
-          "name": "OpenAi account"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "mode": "combine",
-        "combineBy": "combineAll",
-        "options": {}
-      },
-      "type": "n8n-nodes-base.merge",
-      "typeVersion": 3.2,
-      "position": [
-        6320,
-        -300
-      ],
-      "id": "ed4c9e6d-5655-467b-b668-5666d475a93b",
-      "name": "Merge2"
-    },
-    {
-      "parameters": {
-        "mode": "runOnceForEachItem",
-        "jsCode": "var memory = $json.data.allMessages\n\nmemory.push($json.choices[0].message)\n\n\nvar data = {\n  memory: JSON.stringify(memory),\n  data: $json.data\n}\nreturn data"
-      },
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": [
-        6680,
-        -300
-      ],
-      "id": "7eb6daa7-b915-4234-a3c7-2eb93e859149",
-      "name": "Code1"
-    },
-    {
-      "parameters": {
-        "mode": "runOnceForEachItem",
-        "jsCode": "var returnData = {\n  openai: {\n    json: {\n      model: \"text-embedding-3-small\",\n      input: $json.chatInput\n    }\n  },\n  chatInput: $json.chatInput\n}\nreturn returnData\n"
-      },
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": [
-        2340,
-        -180
-      ],
-      "id": "5c5c1637-fedb-4115-92ad-e4c4ec54d5d4",
-      "name": "Code2"
-    },
-    {
-      "parameters": {
-        "mode": "combine",
-        "combineBy": "combineAll",
-        "options": {}
-      },
-      "type": "n8n-nodes-base.merge",
-      "typeVersion": 3.2,
-      "position": [
-        4220,
-        -280
-      ],
-      "id": "f42c3503-80a2-4907-a5c0-55232346fb11",
-      "name": "Merge3"
-    },
-    {
-      "parameters": {
         "method": "POST",
         "url": "https://api.openai.com/v1/embeddings",
         "authentication": "predefinedCredentialType",
@@ -402,7 +253,7 @@
     {
       "parameters": {
         "operation": "set",
-        "key": "=embedding:{{ $('Input for AI').item.json.sessionId }}:{{ $('Merge1').item.json.body.charaId }}",
+        "key": "=embedding:{{ $('Input for AI').item.json.sessionId }}:{{ $('Merge Memory').item.json.body.charaId }}",
         "value": "={{ $json.vectorDB }}"
       },
       "type": "n8n-nodes-base.redis",
@@ -422,50 +273,6 @@
     },
     {
       "parameters": {
-        "mode": "combine",
-        "combineBy": "combineAll",
-        "options": {}
-      },
-      "type": "n8n-nodes-base.merge",
-      "typeVersion": 3.2,
-      "position": [
-        5420,
-        0
-      ],
-      "id": "8252d2ed-275c-48eb-94b4-99ee37b2397f",
-      "name": "Merge4"
-    },
-    {
-      "parameters": {
-        "mode": "runOnceForEachItem",
-        "jsCode": "function cosineSimilarity(a, b) {\n  if (!Array.isArray(a) || !Array.isArray(b)) return -1;\n  if (a.length !== b.length) return -1;\n\n  const dot = a.reduce((sum, ai, i) => sum + ai * b[i], 0);\n  const normA = Math.sqrt(a.reduce((sum, ai) => sum + ai * ai, 0));\n  const normB = Math.sqrt(b.reduce((sum, bi) => sum + bi * bi, 0));\n  return dot / (normA * normB);\n}\n\nconst inputEmbedding = Array.isArray($json.embedding)\n  ? $json.embedding\n  : JSON.parse($json.embedding);\n\nconst vectorStore = Array.isArray($json.vectorDB)\n  ? $json.vectorDB\n  : JSON.parse($json.vectorDB);\n\nvar content = {\n  context: []\n}\n\n// Cek minimal 1 vector\nif (!vectorStore?.length || !Array.isArray(inputEmbedding)) {\n  \n  return content;\n}\n\nconsole.log(vectorStore)\nconst sorted = vectorStore\n  .map(item => ({\n    text: item.text,\n    score: cosineSimilarity(inputEmbedding, item.embedding)\n  }))\n  .sort((a, b) => b.score - a.score);\n\nconst context = sorted.slice(0, 3).map(e => e.text).join(\"\\n\");\n\ncontent = {\n  context\n}\nreturn content;\n"
-      },
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": [
-        5080,
-        -280
-      ],
-      "id": "cb80a910-a2a9-4dad-96be-30efe49e2091",
-      "name": "Code3"
-    },
-    {
-      "parameters": {
-        "mode": "combine",
-        "combineBy": "combineAll",
-        "options": {}
-      },
-      "type": "n8n-nodes-base.merge",
-      "typeVersion": 3.2,
-      "position": [
-        4860,
-        -280
-      ],
-      "id": "98b210db-b826-44b0-be75-b6884b12c827",
-      "name": "Merge5"
-    },
-    {
-      "parameters": {
         "operation": "get",
         "propertyName": "value",
         "key": "=memory:{{$json.sessionId}}:{{$json.body.charaId}}",
@@ -479,50 +286,6 @@
       ],
       "id": "923d14dc-6c80-4e92-a4b1-6921067b4b71",
       "name": "get Memory",
-      "credentials": {
-        "redis": {
-          "id": "HxXz8SALEguCMF9j",
-          "name": "Redis account"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "operation": "get",
-        "propertyName": "vector",
-        "key": "=embedding:{{ $('Merge1').item.json.sessionId }}:{{ $('Merge1').item.json.body.charaId }}",
-        "options": {}
-      },
-      "type": "n8n-nodes-base.redis",
-      "typeVersion": 1,
-      "position": [
-        2900,
-        -480
-      ],
-      "id": "698e0dec-3efa-43ec-939e-69ff512177b6",
-      "name": "get Vector 1",
-      "credentials": {
-        "redis": {
-          "id": "HxXz8SALEguCMF9j",
-          "name": "Redis account"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "operation": "get",
-        "propertyName": "vector",
-        "key": "=embedding:{{ $('Merge1').item.json.sessionId }}:{{ $('Merge1').item.json.body.charaId }}",
-        "options": {}
-      },
-      "type": "n8n-nodes-base.redis",
-      "typeVersion": 1,
-      "position": [
-        4580,
-        -400
-      ],
-      "id": "3f909202-83a9-4267-902b-9136a9b16bd6",
-      "name": "get Vector 2",
       "credentials": {
         "redis": {
           "id": "HxXz8SALEguCMF9j",
@@ -575,6 +338,42 @@
     },
     {
       "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "var returnData = {\n  openai: {\n    json: {\n      model: \"text-embedding-3-small\",\n      input: $json.chatInput\n    }\n  },\n  chatInput: $json.chatInput\n}\nreturn returnData\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2340,
+        -180
+      ],
+      "id": "5c5c1637-fedb-4115-92ad-e4c4ec54d5d4",
+      "name": "Json Body Embedding"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "propertyName": "vector",
+        "key": "=embedding:{{ $('Merge Memory').item.json.sessionId }}:{{ $('Merge Memory').item.json.body.charaId }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        2900,
+        -480
+      ],
+      "id": "698e0dec-3efa-43ec-939e-69ff512177b6",
+      "name": "get Vector DB",
+      "credentials": {
+        "redis": {
+          "id": "HxXz8SALEguCMF9j",
+          "name": "Redis account"
+        }
+      }
+    },
+    {
+      "parameters": {
         "mode": "combine",
         "combineBy": "combineAll",
         "options": {}
@@ -586,7 +385,208 @@
         -100
       ],
       "id": "e946cd33-541c-44b1-b15f-8904e220cbac",
-      "name": "Open AI Embedding Merge1"
+      "name": "Open AI Embedding Merge 2"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "propertyName": "vector",
+        "key": "=embedding:{{ $('Merge Memory').item.json.sessionId }}:{{ $('Merge Memory').item.json.body.charaId }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        4580,
+        -400
+      ],
+      "id": "3f909202-83a9-4267-902b-9136a9b16bd6",
+      "name": "get Vector DB 2",
+      "credentials": {
+        "redis": {
+          "id": "HxXz8SALEguCMF9j",
+          "name": "Redis account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineAll",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        2060,
+        -180
+      ],
+      "id": "64398560-c95d-42fb-b765-1f871e407861",
+      "name": "Merge Memory"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineAll",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        4220,
+        -280
+      ],
+      "id": "f42c3503-80a2-4907-a5c0-55232346fb11",
+      "name": "Merge Embedding"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineAll",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        4860,
+        -280
+      ],
+      "id": "98b210db-b826-44b0-be75-b6884b12c827",
+      "name": "Merge Vector DB"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "function cosineSimilarity(a, b) {\n  if (!Array.isArray(a) || !Array.isArray(b)) return -1;\n  if (a.length !== b.length) return -1;\n\n  const dot = a.reduce((sum, ai, i) => sum + ai * b[i], 0);\n  const normA = Math.sqrt(a.reduce((sum, ai) => sum + ai * ai, 0));\n  const normB = Math.sqrt(b.reduce((sum, bi) => sum + bi * bi, 0));\n  return dot / (normA * normB);\n}\n\nconst inputEmbedding = Array.isArray($json.embedding)\n  ? $json.embedding\n  : JSON.parse($json.embedding);\n\nconst vectorStore = Array.isArray($json.vectorDB)\n  ? $json.vectorDB\n  : JSON.parse($json.vectorDB);\n\nvar content = {\n  context: []\n}\n\n// Cek minimal 1 vector\nif (!vectorStore?.length || !Array.isArray(inputEmbedding)) {\n  \n  return content;\n}\n\nconsole.log(vectorStore)\nconst sorted = vectorStore\n  .map(item => ({\n    text: item.text,\n    score: cosineSimilarity(inputEmbedding, item.embedding)\n  }))\n  .sort((a, b) => b.score - a.score);\n\nconst context = sorted.slice(0, 3).map(e => e.text).join(\"\\n\");\n\ncontent = {\n  context\n}\nreturn content;\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        5080,
+        -280
+      ],
+      "id": "cb80a910-a2a9-4dad-96be-30efe49e2091",
+      "name": "Search Vector"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineAll",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        5420,
+        0
+      ],
+      "id": "8252d2ed-275c-48eb-94b4-99ee37b2397f",
+      "name": "Merge Vector Result"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const data = JSON.parse($json.value || '{}');\n\nvar allMessages = []\n\n// Inisialisasi kalau kosong\nif (!data.messages) data.messages = [];\n\n\nallMessages = data.messages\ndata.allMessages = allMessages\n\nif (data.messages.length > 40) {\n  data.messages = data.messages.slice(-40);\n}\n\ndata.stage = $('Stage').item.json.body.stageId;\ndata.charaId = $('Stage').item.json.body.charaId;\ndata.userId = $('Stage').item.json.body.sessionId;\n\n// Tambahkan message baru\n// Cek apakah system message sudah ada\nconst systemAlreadyExists = data.messages.some(\n  m => m.role === \"system\" && m.content === $json.systemMessage\n);\n\n// Tambahkan hanya jika belum ada\nif (!systemAlreadyExists && $json.systemMessage) {\n  data.messages.push({ role: \"system\", content: $json.systemMessage });\n  data.allMessages.push({ role: \"system\", content: $json.systemMessage });\n}\n\n// tambahkan context dari embedding\ndata.messages.push({ role: \"system\", content: `Gunakan informasi ini: $json.context`});\n\n// Tambahkan input user selalu\ndata.messages.push({ role: \"user\", content: $json.chatInput });\ndata.allMessages.push({ role: \"user\", content: $json.chatInput });\n\nvar returnData = {\n  data,\n  openai: { \n    json: {\n      model: \"gpt-4o-mini\",\n      messages: data.messages\n    }\n  },\n  memory: JSON.stringify(data)\n}\nreturn returnData\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        5720,
+        -280
+      ],
+      "id": "f9e56393-9193-49b0-872b-f946778fbe3e",
+      "name": "Open AI Json Body"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.openai.com/v1/chat/completions",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "openAiApi",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ $json.openai.json }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        6040,
+        -480
+      ],
+      "id": "68369da8-8056-4ffd-87d7-161efb542ef8",
+      "name": "OpenAI Chat",
+      "credentials": {
+        "openAiApi": {
+          "id": "cZyHogXBcUcco8P7",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineAll",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        6320,
+        -300
+      ],
+      "id": "ed4c9e6d-5655-467b-b668-5666d475a93b",
+      "name": "Merge AI Response"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "var memory = $json.data.allMessages\n\nmemory.push($json.choices[0].message)\n\n\nvar data = {\n  memory: JSON.stringify(memory),\n  data: $json.data\n}\nreturn data"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        6680,
+        -300
+      ],
+      "id": "7eb6daa7-b915-4234-a3c7-2eb93e859149",
+      "name": "Memory & TTS Data"
+    },
+    {
+      "parameters": {
+        "operation": "set",
+        "key": "=memory: {{ $json.data.userId }}:{{ $json.data.charaId }}",
+        "value": "={{ $json.memory }}"
+      },
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        7000,
+        -40
+      ],
+      "id": "d17738ee-58a9-49d8-87f0-329624a3cf79",
+      "name": "Set Memory",
+      "credentials": {
+        "redis": {
+          "id": "HxXz8SALEguCMF9j",
+          "name": "Redis account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineAll",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        8140,
+        -320
+      ],
+      "id": "ae0fcb08-2084-4596-b8f3-a49e8bbecf8c",
+      "name": "Merge Result TTS & AI"
     }
   ],
   "pinData": {},
@@ -646,17 +646,6 @@
         ]
       ]
     },
-    "Merge": {
-      "main": [
-        [
-          {
-            "node": "Webhook Respond",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
     "Input for AI": {
       "main": [
         [
@@ -666,7 +655,7 @@
             "index": 0
           },
           {
-            "node": "Merge1",
+            "node": "Merge Memory",
             "type": "main",
             "index": 1
           }
@@ -688,121 +677,9 @@
       "main": [
         [
           {
-            "node": "Merge",
+            "node": "Merge Result TTS & AI",
             "type": "main",
             "index": 0
-          }
-        ]
-      ]
-    },
-    "Code": {
-      "main": [
-        [
-          {
-            "node": "HTTP Request",
-            "type": "main",
-            "index": 0
-          },
-          {
-            "node": "Merge2",
-            "type": "main",
-            "index": 1
-          }
-        ]
-      ]
-    },
-    "Merge1": {
-      "main": [
-        [
-          {
-            "node": "Code2",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "HTTP Request": {
-      "main": [
-        [
-          {
-            "node": "Merge2",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Merge2": {
-      "main": [
-        [
-          {
-            "node": "Code1",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Code1": {
-      "main": [
-        [
-          {
-            "node": "Redis",
-            "type": "main",
-            "index": 0
-          },
-          {
-            "node": "Translate for TTS (Japanese)",
-            "type": "main",
-            "index": 0
-          },
-          {
-            "node": "Merge",
-            "type": "main",
-            "index": 1
-          }
-        ]
-      ]
-    },
-    "Code2": {
-      "main": [
-        [
-          {
-            "node": "OpenAI Embedding",
-            "type": "main",
-            "index": 0
-          },
-          {
-            "node": "Merge3",
-            "type": "main",
-            "index": 1
-          },
-          {
-            "node": "Open AI Embedding Merge1",
-            "type": "main",
-            "index": 1
-          }
-        ]
-      ]
-    },
-    "Merge3": {
-      "main": [
-        [
-          {
-            "node": "get Vector 2",
-            "type": "main",
-            "index": 0
-          },
-          {
-            "node": "Merge4",
-            "type": "main",
-            "index": 1
-          },
-          {
-            "node": "Merge5",
-            "type": "main",
-            "index": 1
           }
         ]
       ]
@@ -811,7 +688,7 @@
       "main": [
         [
           {
-            "node": "get Vector 1",
+            "node": "get Vector DB",
             "type": "main",
             "index": 0
           },
@@ -823,66 +700,11 @@
         ]
       ]
     },
-    "Merge4": {
-      "main": [
-        [
-          {
-            "node": "Code",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Code3": {
-      "main": [
-        [
-          {
-            "node": "Merge4",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Merge5": {
-      "main": [
-        [
-          {
-            "node": "Code3",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
     "get Memory": {
       "main": [
         [
           {
-            "node": "Merge1",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "get Vector 1": {
-      "main": [
-        [
-          {
-            "node": "Open AI Embedding Merge",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "get Vector 2": {
-      "main": [
-        [
-          {
-            "node": "Merge5",
+            "node": "Merge Memory",
             "type": "main",
             "index": 0
           }
@@ -893,7 +715,7 @@
       "main": [
         [
           {
-            "node": "Open AI Embedding Merge1",
+            "node": "Open AI Embedding Merge 2",
             "type": "main",
             "index": 0
           }
@@ -915,7 +737,7 @@
       "main": [
         [
           {
-            "node": "Merge3",
+            "node": "Merge Embedding",
             "type": "main",
             "index": 0
           },
@@ -927,11 +749,189 @@
         ]
       ]
     },
-    "Open AI Embedding Merge1": {
+    "Json Body Embedding": {
+      "main": [
+        [
+          {
+            "node": "OpenAI Embedding",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge Embedding",
+            "type": "main",
+            "index": 1
+          },
+          {
+            "node": "Open AI Embedding Merge 2",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "get Vector DB": {
+      "main": [
+        [
+          {
+            "node": "Open AI Embedding Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Open AI Embedding Merge 2": {
       "main": [
         [
           {
             "node": "Combine Embedding",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "get Vector DB 2": {
+      "main": [
+        [
+          {
+            "node": "Merge Vector DB",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge Memory": {
+      "main": [
+        [
+          {
+            "node": "Json Body Embedding",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge Embedding": {
+      "main": [
+        [
+          {
+            "node": "get Vector DB 2",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge Vector Result",
+            "type": "main",
+            "index": 1
+          },
+          {
+            "node": "Merge Vector DB",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge Vector DB": {
+      "main": [
+        [
+          {
+            "node": "Search Vector",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Search Vector": {
+      "main": [
+        [
+          {
+            "node": "Merge Vector Result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge Vector Result": {
+      "main": [
+        [
+          {
+            "node": "Open AI Json Body",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Open AI Json Body": {
+      "main": [
+        [
+          {
+            "node": "OpenAI Chat",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge AI Response",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat": {
+      "main": [
+        [
+          {
+            "node": "Merge AI Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge AI Response": {
+      "main": [
+        [
+          {
+            "node": "Memory & TTS Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Memory & TTS Data": {
+      "main": [
+        [
+          {
+            "node": "Set Memory",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Translate for TTS (Japanese)",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge Result TTS & AI",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge Result TTS & AI": {
+      "main": [
+        [
+          {
+            "node": "Webhook Respond",
             "type": "main",
             "index": 0
           }
@@ -943,7 +943,7 @@
   "settings": {
     "executionOrder": "v1"
   },
-  "versionId": "515b6a5e-aa36-4fc9-83b4-102c45a5216d",
+  "versionId": "b2cd8383-5686-418b-8267-a70a7701e463",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "f93bae6a3c90db1ef166d4bc63961b167e5b660430c542cd609799c136cda7a6"
