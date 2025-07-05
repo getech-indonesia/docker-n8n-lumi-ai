@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Konfigurasi S3
-S3_BUCKET_NAME="erp-sehati"
+S3_BUCKET_NAME="lumi-ai-project"
 S3_ENDPOINT_URL="https://is3.cloudhost.id"
 S3_REGION="us-east-1"
 # S3_ACCESS_KEY dan S3_SECRET_KEY akan diambil dari environment variables
