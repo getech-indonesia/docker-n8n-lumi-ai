@@ -7,7 +7,7 @@ S3_REGION="us-east-1"
 # S3_ACCESS_KEY dan S3_SECRET_KEY akan diambil dari environment variables
 
 # Nama volume Docker yang akan dibackup
-VOLUME_NAME="n8n_data"
+VOLUME_NAME="docker-n8n-lumi-ai_n8n_data"
 
 # Direktori sementara untuk menyimpan backup sebelum diunggah
 BACKUP_TEMP_DIR="/tmp/n8n_backup_temp"
