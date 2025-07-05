@@ -28,6 +28,7 @@ services:
       - REDIS_PASSWORD=qwertieser
     volumes:
       - n8n_data:/home/node/.n8n
+      - ./data/audio:/files/audio
     depends_on:
       - redis
 
