@@ -40,13 +40,13 @@ echo "Direktori sementara $BACKUP_TEMP_DIR telah disiapkan."
 # Perhatian: Ini berasumsi container 'n8n' sedang berjalan atau setidaknya ada.
 # Dan juga berasumsi docker inspect dapat dijalankan oleh user yang menjalankan skrip ini.
 # Jika container n8n didefinisikan dengan nama lain di docker-compose.yml, sesuaikan 'n8n_n8n_1' atau 'n8n'
-# Coba cari container ID dari nama service 'n8n' di docker-compose
-CONTAINER_ID=$(docker-compose ps -q n8n)
+# Coba cari container ID dari nama service 'n8n' di docker compose
+CONTAINER_ID=$(docker compose ps -q n8n)
 if [ -z "$CONTAINER_ID" ]; then
-    echo "ERROR: Container n8n tidak ditemukan. Mencoba mencari dengan nama 'n8n'..."
+    echo "ERROR: Container n8n tidak ditemukan melalui 'docker compose ps -q n8n'. Mencoba mencari dengan 'docker ps -q --filter name=n8n'..."
     CONTAINER_ID=$(docker ps -q --filter "name=n8n")
     if [ -z "$CONTAINER_ID" ]; then
-        echo "ERROR: Container n8n masih tidak ditemukan. Pastikan container berjalan atau service 'n8n' ada di docker-compose.yml. Proses backup dibatalkan."
+        echo "ERROR: Container n8n masih tidak ditemukan. Pastikan container berjalan atau service 'n8n' ada di file konfigurasi compose Anda. Proses backup dibatalkan."
         exit 1
     fi
 fi
