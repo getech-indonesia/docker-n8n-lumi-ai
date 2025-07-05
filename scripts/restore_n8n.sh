@@ -92,6 +92,7 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
+docker compose restart n8n
 echo "Restore selesai. Silakan restart container n8n jika diperlukan."
 echo "=============================================="
 exit 0
